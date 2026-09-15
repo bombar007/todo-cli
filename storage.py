@@ -1,12 +1,32 @@
 import json
+from abc import ABC, abstractmethod
 
 
-def load_tasks(filename="tasks.json"):
-    with open(filename, "r") as f:
-        data = json.load(f)
-    return data
+class TaskRepository(ABC):
+    @abstractmethod
+    def load(self) -> list:
+        pass
 
-def save_tasks(tasks, filename="tasks.json"):
-    with open(filename, "w") as f:
-        json.dump(tasks, f)
+    @abstractmethod
+    def save(self, tasks: list) -> None:
+        pass
 
+
+class JSONTaskRepository(TaskRepository):
+    def __init__(self, filename="tasks.json"):
+        self.filename = filename
+
+    def load(self) -> list:
+        try:
+            with open(self.filename, "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = []
+        except json.JSONDecodeError:
+            print("Erro ao carregar as tarefas.")
+            data = []
+        return data
+
+    def save(self, tasks: list) -> None:
+        with open(self.filename, "w") as f:
+            json.dump(tasks, f)
