@@ -1,6 +1,13 @@
 import json
-from tasks import add_task, complete_task, remove_task, list_tasks
+
+from tasks import add_task, complete_task, remove_task
 from storage import load_tasks, save_tasks
+
+
+def print_tasks(tasks):
+    for i, t in enumerate(tasks):
+        status = "x" if t["done"] else " "
+        print(f"[{status}] {i}: {t['title']}")
 
 
 def main():
@@ -24,23 +31,29 @@ def main():
             title = input("Task title: ")
             tasks = add_task(tasks, title)
         elif choice == "2":
-            list_tasks(tasks)
+            print_tasks(tasks)
             raw_idx = input("Task number: ")
             if not raw_idx.isdigit():
                 print("Por favor insere um número válido.")
                 continue
-            idx = int(raw_idx) 
-            tasks = complete_task(tasks, idx)
+            result = complete_task(tasks, int(raw_idx))
+            if result is None:
+                print("Índice inválido.")
+            else:
+                tasks = result
         elif choice == "3":
-            list_tasks(tasks)
+            print_tasks(tasks)
             raw_idx = input("Task number: ")
             if not raw_idx.isdigit():
                 print("Por favor insere um número válido.")
                 continue
-            idx = int(raw_idx)
-            tasks = remove_task(tasks, idx)
+            result = remove_task(tasks, int(raw_idx))
+            if result is None:
+                print("Índice inválido.")
+            else:
+                tasks = result
         elif choice == "4":
-            list_tasks(tasks)
+            print_tasks(tasks)
         elif choice == "5":
             save_tasks(tasks)
             break
