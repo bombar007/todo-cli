@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from tasks import add_task, complete_task, remove_task
-from storage import JSONTaskRepository
+#from storage import JSONTaskRepository
+from sqlite_storage import SQLiteTaskRepository
 
 
 app = FastAPI()
-repo = JSONTaskRepository()
+#repo = JSONTaskRepository()
+repo = SQLiteTaskRepository()
 
 
 class Task(BaseModel):

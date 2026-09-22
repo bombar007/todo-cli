@@ -1,7 +1,9 @@
 import json
 
 from tasks import add_task, complete_task, remove_task
-from storage import JSONTaskRepository
+#storage import JSONTaskRepository
+from sqlite_storage import SQLiteTaskRepository
+
 
 
 class TaskManager:
@@ -35,7 +37,8 @@ class TaskManager:
 
 
 def main():
-    repo = JSONTaskRepository()
+    #repo = JSONTaskRepository()
+    repo = SQLiteTaskRepository()
     manager = TaskManager(repo)
 
     while True:
