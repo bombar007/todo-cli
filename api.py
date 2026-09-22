@@ -1,26 +1,48 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import APIKeyHeader
+#from fastapi import FastAPI, HTTPException, Request, Depends
 from pydantic import BaseModel
 from tasks import add_task, complete_task, remove_task
-#from storage import JSONTaskRepository
 from sqlite_storage import SQLiteTaskRepository
+from dotenv import load_dotenv
+import secrets, os
 
 
 app = FastAPI()
 #repo = JSONTaskRepository()
 repo = SQLiteTaskRepository()
 
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
+
 
 class Task(BaseModel):
     title: str
 
 
-@app.get("/tasks")
+#def verify_api_key(request: Request):
+#    api_key = request.headers.get("X-API-Key")
+#    if not api_key or not secrets.compare_digest(api_key, API_KEY):
+#        raise HTTPException(status_code=401, detail="Chave de API inválida ou em falta")
+
+api_key_header = APIKeyHeader(name="X-API-Key")
+
+def verify_api_key(api_key: str = Depends(api_key_header)):
+    if not api_key or not secrets.compare_digest(api_key, API_KEY):
+        raise HTTPException(
+            status_code=401,
+            detail="Chave de API inválida ou em falta"
+        )
+
+
+@app.get("/tasks", dependencies=[Depends(verify_api_key)])
 async def list_tasks():
     tasks = repo.load()
     return tasks
 
 
-@app.post("/tasks")
+@app.post("/tasks", dependencies=[Depends(verify_api_key)])
 async def create_task(task: Task):
     tasks = repo.load()
     tasks = add_task(tasks, task.title)
@@ -28,7 +50,7 @@ async def create_task(task: Task):
     return tasks
 
 
-@app.patch("/tasks/{index}/complete")
+@app.patch("/tasks/{index}/complete", dependencies=[Depends(verify_api_key)])
 async def complete_task_endpoint(index: int):
     tasks = repo.load()
     result = complete_task(tasks, index)
@@ -38,7 +60,7 @@ async def complete_task_endpoint(index: int):
     return {"message": "Tarefa concluída com sucesso"}
 
 
-@app.delete("/tasks/{index}")
+@app.delete("/tasks/{index}", dependencies=[Depends(verify_api_key)])
 async def remove_task_endpoint(index: int):
     tasks = repo.load()
     result = remove_task(tasks, index)
